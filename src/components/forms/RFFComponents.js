@@ -6,11 +6,14 @@ import {
   CFormSelect,
   CFormSwitch,
   CFormTextarea,
+  CSpinner,
 } from '@coreui/react'
 import Select from 'react-select'
+import AsyncSelect from 'react-select/async'
 import { Field } from 'react-final-form'
 import React from 'react'
 import PropTypes from 'prop-types'
+import { useRef } from 'react'
 
 /*
   wrapper classes for React Final Form with CoreUI
@@ -72,7 +75,14 @@ RFFCFormCheck.propTypes = {
   ...sharedPropTypes,
 }
 
-export const RFFCFormSwitch = ({ name, label, className = 'mb-3', validate, disabled = false }) => {
+export const RFFCFormSwitch = ({
+  name,
+  label,
+  sublabel,
+  className = 'mb-3',
+  validate,
+  disabled = false,
+}) => {
   return (
     <Field name={name} type="checkbox" validate={validate}>
       {({ meta, input }) => (
@@ -87,6 +97,7 @@ export const RFFCFormSwitch = ({ name, label, className = 'mb-3', validate, disa
             label={label}
           />
           {input.value && <RFFCFormFeedback meta={meta} />}
+          <sub>{sublabel}</sub>
         </div>
       )}
     </Field>
@@ -258,11 +269,25 @@ RFFCFormSelect.propTypes = {
   values: PropTypes.arrayOf(PropTypes.shape({ label: PropTypes.string, value: PropTypes.any })),
 }
 
-export function Condition({ when, is, children }) {
+export function Condition({ when, is, children, like, regex }) {
   return (
-    <Field name={when} subscription={{ value: true }}>
-      {({ input: { value } }) => (value === is ? children : null)}
-    </Field>
+    <>
+      {is && (
+        <Field name={when} subscription={{ value: true }}>
+          {({ input: { value } }) => (value === is ? children : null)}
+        </Field>
+      )}
+      {like && (
+        <Field name={when} subscription={{ value: true }}>
+          {({ input: { value } }) => (value.includes(like) ? children : null)}
+        </Field>
+      )}
+      {regex && (
+        <Field name={when} subscription={{ value: true }}>
+          {({ input: { value } }) => (value.match(regex) ? children : null)}
+        </Field>
+      )}
+    </>
   )
 }
 
@@ -293,18 +318,35 @@ export const RFFSelectSearch = ({
         return (
           <div>
             <CFormLabel htmlFor={name}>{label}</CFormLabel>
-            <Select
-              className="react-select-container"
-              classNamePrefix="react-select"
-              {...input}
-              isClearable={true}
-              name={name}
-              id={name}
-              disabled={disabled}
-              options={selectSearchvalues}
-              placeholder={placeholder}
-              isMulti={multi}
-            />
+            {onChange && (
+              <Select
+                className="react-select-container"
+                classNamePrefix="react-select"
+                {...input}
+                isClearable={false}
+                name={name}
+                id={name}
+                disabled={disabled}
+                options={selectSearchvalues}
+                placeholder={placeholder}
+                isMulti={multi}
+                onChange={onChange}
+              />
+            )}
+            {!onChange && (
+              <Select
+                className="react-select-container"
+                classNamePrefix="react-select"
+                {...input}
+                isClearable={true}
+                name={name}
+                id={name}
+                disabled={disabled}
+                options={selectSearchvalues}
+                placeholder={placeholder}
+                isMulti={multi}
+              />
+            )}
             <RFFCFormFeedback meta={meta} />
           </div>
         )

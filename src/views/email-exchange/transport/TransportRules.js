@@ -5,6 +5,8 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { CippPageList } from 'src/components/layout'
 import { CippActionsOffcanvas } from 'src/components/utilities'
+import { CellTip } from 'src/components/tables'
+import { TitleButton } from 'src/components/buttons'
 
 const Offcanvas = (row, rowIndex, formatExtraData) => {
   const tenant = useSelector((state) => state.app.currentTenant)
@@ -73,6 +75,7 @@ const columns = [
     selector: (row) => row['Name'],
     sortable: true,
     wrap: true,
+    cell: (row) => CellTip(row['Name']),
     exportSelector: 'Name',
   },
   {
@@ -106,6 +109,7 @@ const columns = [
   {
     name: 'Actions',
     cell: Offcanvas,
+    maxWidth: '80px',
   },
 ]
 
@@ -116,6 +120,11 @@ const TransportRulesList = () => {
     <CippPageList
       title="Transport Rules"
       tenantSelector={true}
+      titleButton={
+        <>
+          <TitleButton href="/email/transport/deploy-connector" title="Deploy Transport Rule" />
+        </>
+      }
       datatable={{
         reportName: `${tenant?.defaultDomainName}-transport-rules-list`,
         path: '/api/ListTransportRules',
